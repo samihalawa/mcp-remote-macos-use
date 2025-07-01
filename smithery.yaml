@@ -1,0 +1,51 @@
+# Smithery configuration file: https://smithery.ai/docs/build/project-config
+
+startCommand:
+  type: stdio
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({ command: 'python', args: ['-m', 'mcp_remote_macos_use.server'], env: { MACOS_HOST: config.macosHost, MACOS_PORT: String(config.macosPort), MACOS_USERNAME: config.macosUsername, MACOS_PASSWORD: config.macosPassword, VNC_ENCRYPTION: config.vncEncryption || 'prefer_on', LIVEKIT_URL: config.livekitUrl || '', LIVEKIT_API_KEY: config.livekitApiKey || '', LIVEKIT_API_SECRET: config.livekitApiSecret || '' } })
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - macosHost
+      - macosUsername
+      - macosPassword
+    properties:
+      macosHost:
+        type: string
+        description: Hostname or IP address of the target macOS machine
+      macosPort:
+        type: number
+        default: 5900
+        description: VNC port number
+      macosUsername:
+        type: string
+        description: Username for VNC authentication
+      macosPassword:
+        type: string
+        description: Password for VNC authentication
+      vncEncryption:
+        type: string
+        default: prefer_on
+        description: VNC encryption preference
+      livekitUrl:
+        type: string
+        description: LiveKit server URL (optional)
+      livekitApiKey:
+        type: string
+        description: LiveKit API key (optional)
+      livekitApiSecret:
+        type: string
+        description: LiveKit API secret (optional)
+  exampleConfig:
+    macosHost: mac3.local
+    macosPort: 5900
+    macosUsername: admin
+    macosPassword: s3cr3tP@ss
+    vncEncryption: force_on
+    livekitUrl: wss://livekit.example.com
+    livekitApiKey: exampleApiKey
+    livekitApiSecret: exampleApiSecret
