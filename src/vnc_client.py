@@ -165,6 +165,29 @@ class Encoding:
     CURSOR = -239
     DESKTOP_SIZE = -223
 
+def _clean_hostname(host: str) -> str:
+    """Remove protocol prefixes from hostname.
+    
+    Args:
+        host: Hostname that may contain protocol prefixes
+        
+    Returns:
+        Clean hostname without protocol prefixes
+    """
+    # Remove common protocol prefixes
+    prefixes = ['tcp://', 'vnc://', 'https://', 'http://', 'wss://', 'ws://']
+    cleaned_host = host
+    for prefix in prefixes:
+        if cleaned_host.startswith(prefix):
+            cleaned_host = cleaned_host[len(prefix):]
+            logger.debug(f"Removed protocol prefix '{prefix}' from hostname: {host} -> {cleaned_host}")
+            break
+    
+    # Remove trailing slashes if any
+    cleaned_host = cleaned_host.rstrip('/')
+    
+    return cleaned_host
+
 class VNCClient:
     """VNC client implementation to connect to remote MacOs machines and capture screenshots."""
 
@@ -179,7 +202,8 @@ class VNCClient:
             username: remote MacOs machine username (optional, only used with certain authentication methods)
             encryption: Encryption preference, one of "prefer_on", "prefer_off", "server" (default: "prefer_on")
         """
-        self.host = host
+        # Clean the hostname to remove any protocol prefixes
+        self.host = _clean_hostname(host)
         self.port = port
         self.password = password
         self.username = username
