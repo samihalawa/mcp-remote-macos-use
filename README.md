@@ -3,6 +3,54 @@
 
 **A direct alternative to OpenAI Operator, optimized specifically for autonomous AI agents with complete desktop capabilities, requiring no additional software installation.**
 
+## 🚀 Quick Start with Smithery.ai
+
+Deploy instantly on [Smithery.ai](https://smithery.ai) - no configuration needed:
+
+```bash
+# Via Smithery CLI
+npx @smithery/cli run @samihalawa/mcp-remote-macos-use
+
+# Or add to your Claude Desktop config:
+{
+  "mcpServers": {
+    "remote-macos": {
+      "command": "npx",
+      "args": [
+        "@smithery/cli", "run", 
+        "@samihalawa/mcp-remote-macos-use",
+        "--key", "YOUR_SMITHERY_KEY"
+      ]
+    }
+  }
+}
+```
+
+**Required Configuration:**
+- `MACOS_HOST`: Target Mac hostname (e.g., `mac3.local` or `your-tunnel.trycloudflare.com`)
+- `MACOS_USERNAME`: VNC username
+- `MACOS_PASSWORD`: VNC password  
+- `MACOS_PORT`: VNC port (5900 for local, 443 for Cloudflare tunnels)
+
+## 🌐 Global Access via Cloudflare Tunnel
+
+Make your Mac accessible from anywhere:
+
+```bash
+# On target Mac - install cloudflared
+brew install cloudflared
+
+# Login and create tunnel
+cloudflared tunnel login
+cloudflared tunnel create my-mac-vnc
+
+# Start tunnel (exposes VNC globally)
+cloudflared tunnel --url vnc://localhost:5900
+# Returns: https://random-name.trycloudflare.com
+```
+
+Then use the tunnel URL as your `MACOS_HOST` with port `443`.
+
 [![Docker Pulls](https://img.shields.io/docker/pulls/buryhuang/mcp-remote-macos-use)](https://hub.docker.com/r/buryhuang/mcp-remote-macos-use)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

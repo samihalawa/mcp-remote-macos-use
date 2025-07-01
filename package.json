@@ -1,0 +1,101 @@
+{
+  "name": "@samihalawa/mcp-remote-macos-use",
+  "version": "1.0.0",
+  "description": "Remote macOS control via VNC - Complete desktop automation for AI agents with mouse, keyboard, screen capture, and application control. Works globally through Cloudflare Tunnel.",
+  "main": "src/mcp_remote_macos_use/server.py",
+  "keywords": [
+    "mcp",
+    "macos",
+    "remote",
+    "vnc",
+    "automation",
+    "screen-sharing",
+    "desktop-control",
+    "ai-agent",
+    "cloudflare-tunnel",
+    "smithery"
+  ],
+  "author": "Sami Halawa <samihalawa@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samihalawa/mcp-remote-macos-use.git"
+  },
+  "bugs": {
+    "url": "https://github.com/samihalawa/mcp-remote-macos-use/issues"
+  },
+  "homepage": "https://github.com/samihalawa/mcp-remote-macos-use#readme",
+  "smithery": {
+    "server": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "{PACKAGE_DIR}",
+        "python",
+        "-m",
+        "mcp_remote_macos_use.server"
+      ],
+      "env": {
+        "MACOS_HOST": "{MACOS_HOST}",
+        "MACOS_PORT": "{MACOS_PORT}",
+        "MACOS_USERNAME": "{MACOS_USERNAME}",
+        "MACOS_PASSWORD": "{MACOS_PASSWORD}",
+        "VNC_ENCRYPTION": "{VNC_ENCRYPTION}"
+      }
+    },
+    "configuration": [
+      {
+        "key": "MACOS_HOST",
+        "title": "macOS Host",
+        "description": "Hostname or IP address of the target macOS machine (e.g., mac3.local or yourname.trycloudflare.com)",
+        "type": "string",
+        "required": true,
+        "default": "mac3.local"
+      },
+      {
+        "key": "MACOS_PORT", 
+        "title": "VNC Port",
+        "description": "VNC port number (5900 for local, 443 for Cloudflare tunnels)",
+        "type": "string",
+        "required": true,
+        "default": "5900"
+      },
+      {
+        "key": "MACOS_USERNAME",
+        "title": "macOS Username",
+        "description": "Username for VNC authentication on the target Mac",
+        "type": "string",
+        "required": true
+      },
+      {
+        "key": "MACOS_PASSWORD",
+        "title": "macOS Password", 
+        "description": "Password for VNC authentication on the target Mac",
+        "type": "password",
+        "required": true
+      },
+      {
+        "key": "VNC_ENCRYPTION",
+        "title": "VNC Encryption",
+        "description": "VNC encryption preference",
+        "type": "select",
+        "required": false,
+        "default": "prefer_on",
+        "options": [
+          {"value": "prefer_on", "label": "Prefer On"},
+          {"value": "prefer_off", "label": "Prefer Off"},
+          {"value": "force_on", "label": "Force On"},
+          {"value": "force_off", "label": "Force Off"}
+        ]
+      }
+    ],
+    "prompts": [
+      {
+        "name": "remote_macos_controller",
+        "description": "Professional remote macOS controller with comprehensive desktop automation capabilities",
+        "content": "You are a professional remote macOS controller with advanced capabilities. You have access to comprehensive remote macOS tools that allow you to:\n\n🖥️ **SCREEN CAPTURE & ANALYSIS**\n- Take high-quality screenshots of the remote Mac desktop\n- Analyze visual elements, windows, applications, and UI components\n- Monitor system status, running applications, and desktop state\n\n🖱️ **PRECISE MOUSE CONTROL**\n- Click anywhere on screen with pixel-perfect accuracy\n- Double-click for file/folder operations\n- Right-click for context menus\n- Drag and drop files, windows, and UI elements\n- Scroll in any direction with customizable speed\n- Automatic coordinate scaling for different screen resolutions\n\n⌨️ **ADVANCED KEYBOARD INPUT**\n- Type text with full Unicode support\n- Send special keys (Enter, Tab, Escape, Arrow keys, etc.)\n- Execute keyboard shortcuts (Cmd+C, Cmd+V, Cmd+Tab, etc.)\n- System commands (Cmd+Space for Spotlight, Cmd+Q to quit apps)\n\n🚀 **APPLICATION MANAGEMENT**\n- Launch applications by name, path, or bundle ID\n- Switch between running applications\n- Force quit unresponsive applications\n- Monitor application states and processes\n\n🔧 **SYSTEM INTEGRATION**\n- Works with Cloudflare Tunnel for global access\n- No additional software required on target Mac\n- Secure VNC protocol with encryption options\n- Real-time screen updates for responsive control\n\n**WORKFLOW APPROACH:**\n1. **Always start with a screenshot** to understand current desktop state\n2. **Analyze the visual layout** before taking any actions\n3. **Use precise coordinates** for mouse operations\n4. **Verify actions** by taking follow-up screenshots\n5. **Handle errors gracefully** with alternative approaches\n\n**BEST PRACTICES:**\n- Take screenshots frequently to track progress\n- Use descriptive action names in your responses\n- Wait for UI updates between rapid operations\n- Combine keyboard shortcuts for efficiency\n- Adapt to different macOS versions and configurations\n\n**SECURITY NOTES:**\n- All connections use authenticated VNC protocols\n- Supports encrypted connections for secure remote access\n- Works through firewalls via Cloudflare Tunnel\n- No data is stored or logged during operations\n\nYou can control any Mac remotely as if you were sitting directly in front of it. Use these tools to help users with automation, troubleshooting, demonstrations, and any desktop tasks they need assistance with."
+      }
+    ]
+  }
+}
