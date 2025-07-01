@@ -13,6 +13,8 @@ import os
 from base64 import b64encode
 from datetime import datetime
 import sys
+import subprocess
+import shutil
 
 # Import MCP server libraries
 from mcp.server.models import InitializationOptions
@@ -70,6 +72,100 @@ logger.info(f"VNC_ENCRYPTION from environment: {VNC_ENCRYPTION}")
 logger.info(f"LIVEKIT_URL from environment: {'Set' if LIVEKIT_URL else 'Not set'}")
 logger.info(f"LIVEKIT_API_KEY from environment: {'Set' if LIVEKIT_API_KEY else 'Not set'}")
 logger.info(f"LIVEKIT_API_SECRET from environment: {'Set' if LIVEKIT_API_SECRET else 'Not set'}")
+
+# Check if running on Smithery and set up TCP proxy if needed
+def setup_tcp_proxy_if_needed():
+    """Set up Cloudflare TCP proxy if running on Smithery with a Cloudflare tunnel URL."""
+    global MACOS_HOST, MACOS_PORT
+    
+    # Check if we're running on Smithery (look for Smithery-specific env vars)
+    is_smithery = os.environ.get('SMITHERY_PROFILE_PATH') or os.environ.get('IS_SMITHERY_RUN')
+    
+    # Check if MACOS_HOST looks like a Cloudflare tunnel URL
+    is_cloudflare_url = (
+        MACOS_HOST and 
+        ('.trycloudflare.com' in MACOS_HOST or 
+         '.cloudflare.com' in MACOS_HOST or
+         'vnc.autoword.ai' in MACOS_HOST) and
+        'localhost' not in MACOS_HOST.lower()
+    )
+    
+    if is_smithery and is_cloudflare_url:
+        logger.info(f"Detected Smithery environment with Cloudflare URL: {MACOS_HOST}")
+        
+        # Check if cloudflared is available
+        if not shutil.which('cloudflared'):
+            logger.info("Installing cloudflared...")
+            try:
+                # Try to install cloudflared
+                subprocess.run(['apt-get', 'update', '-y'], check=False, capture_output=True)
+                subprocess.run(['apt-get', 'install', '-y', 'cloudflared'], check=False, capture_output=True)
+                
+                # If apt-get doesn't work, try downloading directly
+                if not shutil.which('cloudflared'):
+                    subprocess.run([
+                        'wget', '-q', 
+                        'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64',
+                        '-O', '/tmp/cloudflared'
+                    ], check=True)
+                    subprocess.run(['chmod', '+x', '/tmp/cloudflared'], check=True)
+                    subprocess.run(['mv', '/tmp/cloudflared', '/usr/local/bin/cloudflared'], check=True)
+            except Exception as e:
+                logger.warning(f"Failed to install cloudflared: {e}")
+                return
+        
+        # Set up TCP proxy
+        local_port = 5901
+        tunnel_url = MACOS_HOST.strip()
+        
+        # Clean the URL (remove protocol if present)
+        if '://' in tunnel_url:
+            tunnel_url = tunnel_url.split('://', 1)[1]
+        tunnel_url = tunnel_url.rstrip('/')
+        
+        logger.info(f"Setting up TCP proxy: {tunnel_url} -> localhost:{local_port}")
+        
+        # Kill any existing proxy on the port
+        try:
+            subprocess.run(['pkill', '-f', f'cloudflared.*{local_port}'], capture_output=True)
+            time.sleep(1)
+        except:
+            pass
+        
+        # Start the TCP proxy in the background
+        try:
+            proxy_cmd = [
+                'cloudflared', 'access', 'tcp',
+                '--hostname', tunnel_url,
+                '--url', f'localhost:{local_port}'
+            ]
+            
+            # Start proxy in background
+            process = subprocess.Popen(
+                proxy_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                start_new_session=True
+            )
+            
+            # Give it a moment to start
+            time.sleep(3)
+            
+            # Check if it's running
+            if process.poll() is None:
+                logger.info(f"TCP proxy started successfully (PID: {process.pid})")
+                # Update connection settings to use local proxy
+                MACOS_HOST = 'localhost'
+                MACOS_PORT = local_port
+                logger.info(f"Updated connection settings: {MACOS_HOST}:{MACOS_PORT}")
+            else:
+                stderr = process.stderr.read().decode() if process.stderr else ''
+                logger.error(f"TCP proxy failed to start: {stderr}")
+        except Exception as e:
+            logger.error(f"Failed to start TCP proxy: {e}")
+
+# Run the TCP proxy setup
+setup_tcp_proxy_if_needed()
 
 # Validate required environment variables
 if not MACOS_HOST:

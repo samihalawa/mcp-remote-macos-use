@@ -40,16 +40,37 @@ Make your Mac accessible from anywhere:
 # On target Mac - install cloudflared
 brew install cloudflared
 
-# Login and create tunnel
+# Option 1: Quick tunnel (temporary URL)
+cloudflared tunnel --url tcp://localhost:5900
+# Returns: https://random-name.trycloudflare.com
+
+# Option 2: Persistent tunnel with custom domain
 cloudflared tunnel login
 cloudflared tunnel create my-mac-vnc
-
-# Start tunnel (exposes VNC globally)
-cloudflared tunnel --url vnc://localhost:5900
-# Returns: https://random-name.trycloudflare.com
+# Configure your tunnel and domain, then run:
+cloudflared tunnel run my-mac-vnc
 ```
 
-Then use the tunnel URL as your `MACOS_HOST` with port `443`.
+### 🚀 Automatic TCP Proxy on Smithery (v0.2.0+)
+
+When deployed on Smithery.ai, the MCP server now **automatically detects** Cloudflare tunnel URLs and sets up the required TCP proxy. Just provide your tunnel URL:
+
+```json
+{
+  "MACOS_HOST": "your-tunnel.trycloudflare.com",
+  "MACOS_PORT": "5900",
+  "MACOS_USERNAME": "your-username",
+  "MACOS_PASSWORD": "your-password"
+}
+```
+
+The server will:
+1. Detect it's running on Smithery
+2. Install cloudflared if needed  
+3. Set up TCP proxy automatically
+4. Connect through localhost:5901
+
+No manual proxy configuration required!
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/buryhuang/mcp-remote-macos-use)](https://hub.docker.com/r/buryhuang/mcp-remote-macos-use)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
